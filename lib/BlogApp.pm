@@ -15,9 +15,8 @@ sub startup ($self) {
 
   my $r = $self->routes;
 
-    $r->get('/')->to('Post#list');
-    $r->get('/post/:id')->to('post#show');
-  
+    $r->get('/')->to('Post#list');    
+
     $r->get('/login')->to('auth#login_form');
     $r->post('/login')->to('auth#login');
     $r->get('/logout')->to('auth#logout');
@@ -32,8 +31,15 @@ sub startup ($self) {
         return undef;
     });
 
-    $auth->get('/post/new')->to('post#new');
+    $auth->get('/post/new')->to('post#create_form');
     $auth->post('/post/new')->to('post#create');
+
+    $r->get('/post/:id')->to('post#show');
+
+    $auth->post('/post/delete/:id')->to('post#delete');
+    $auth->get('/post/edit/:id')->to('post#edit');
+    $auth->post('/post/edit/:id')->to('post#update');
+
 }
 
 1;

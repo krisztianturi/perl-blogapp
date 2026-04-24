@@ -1,0 +1,7 @@
+% layout 'default';
+% title $post->{title};
+
+<div class="container mt-4">
+  <h1><%= $post->{title} %></h1>
+  <p><%= $post->{content} %></p>
+</div>

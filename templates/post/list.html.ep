@@ -34,8 +34,20 @@
           </p>
 
           <a href="/post/<%= $p->{id} %>" class="btn btn-outline-primary btn-sm">
-            Tovább
+            Read more
           </a>
+
+        % if (int(session('user_id')) == int($p->{user_id})) {
+        <form method="post" action="/post/delete/<%= $p->{id} %>" style="display:inline; margin-left:5px;">
+          <button class="btn btn-outline-danger btn-sm">
+            Delete
+          </button>
+        </form>
+        
+          <a href="/post/edit/<%= $p->{id} %>" class="btn btn-outline-success btn-sm">
+            Edit
+          </a>
+        % }
 
         </div>
       </div>
