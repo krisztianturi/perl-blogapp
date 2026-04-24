@@ -1,0 +1,53 @@
+% layout 'default';
+% title 'Blog';
+
+<div class="container mt-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Posts</h1>
+
+    % if (session 'user_id') {
+      <a href="/post/new" class="btn btn-primary btn-sm">
+        + New Post
+      </a>
+    % }
+  </div>
+
+  % my $posts = stash('posts');
+
+  % if ($posts && @$posts) {
+
+    % for my $p (@$posts) {
+
+      <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+
+          <h5 class="card-title">
+            <%= $p->{title} %>
+          </h5>
+
+          <p class="card-text text-muted">
+            <%= substr($p->{content}, 0, 200) %>
+            % if (length($p->{content}) > 200) {
+              ...
+            % }
+          </p>
+
+          <a href="/post/<%= $p->{id} %>" class="btn btn-outline-primary btn-sm">
+            Tovább
+          </a>
+
+        </div>
+      </div>
+
+    % }
+
+  % } else {
+
+    <div class="alert alert-info">
+      There is no post!
+    </div>
+
+  % }
+
+</div>

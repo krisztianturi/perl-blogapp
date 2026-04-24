@@ -1,0 +1,3 @@
+secrets:
+  - dev-secret
+pg: postgresql://blog_user:secret@localhost/blog_db
