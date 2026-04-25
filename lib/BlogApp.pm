@@ -40,6 +40,9 @@ sub startup ($self) {
     $auth->get('/post/edit/:id')->to('post#edit');
     $auth->post('/post/edit/:id')->to('post#update');
 
+    $auth->post('/post/:id/comment')->to('comment#create');
+    $auth->post('/post/:post_id/comment/:comment_id')->to('comment#delete');
+
 }
 
 1;

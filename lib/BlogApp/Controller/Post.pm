@@ -17,6 +17,7 @@ sub list {
 
   my $total_pages = int(($total + $per_page - 1) / $per_page);
   $page = $total_pages if $page > $total_pages && $total_pages > 0;
+  
   $c->stash(posts => $posts, page => $page, total_pages => $total_pages);
 
   $c->render(template => 'post/list');
@@ -108,16 +109,21 @@ sub create {
 
 sub show {
   my $c = shift;
+
   my $id = $c->param('id');
 
-  my $post = $c->pg->db->query(
-    'SELECT * FROM posts WHERE id = ?',
-    $id
-  )->hash;
+  my $post = $c->pg->db->query('SELECT * FROM posts WHERE id = ?', $id)->hash;
 
-  return $c->render(text => 'Post not found', status => 404) unless $post;
+  return $c->reply->not_found unless $post;
 
-  $c->stash(post => $post);
+  my $comments = $c->pg->db->query(
+  'SELECT c.*, u.username
+   FROM comments c
+   JOIN users u ON c.user_id = u.id
+   WHERE c.post_id = ?
+   ORDER BY c.created_at ASC', $id)->hashes;
+
+  $c->stash(post => $post, comments => $comments);
   $c->render(template => 'post/show');
 }
 

@@ -1,7 +1,53 @@
 % layout 'default';
 % title $post->{title};
 
-<div class="container mt-4">
-  <h1><%= $post->{title} %></h1>
-  <p><%= $post->{content} %></p>
+<h2><%= $post->{title} %></h2>
+
+<p><%= $post->{content} %></p>
+
+<hr>
+
+<h4>Comments</h4>
+
+% if (flash 'error') {
+<div class="alert alert-danger">
+  <%= flash 'error' %>
 </div>
+% }
+
+% if (flash 'message') {
+<div class="alert alert-success">
+  <%= flash 'message' %>
+</div>
+% }
+
+% for my $c (@$comments) {
+  <div class="border p-2 mb-2">
+    
+    <strong><%= $c->{username} %></strong>
+    <small class="text-muted">
+      <%= $c->{created_at} %>
+    </small>
+
+    <div>
+      <%= $c->{content} %>
+    </div>
+
+  </div>
+    % if (session('user_id') && session('user_id') == $c->{user_id}) {
+        <form method="post" action="/post/<%= $post->{id} %>/comment/<%= $c->{id} %>" style="display:inline;">
+          <button class="btn btn-sm btn-outline-danger p-1 ms-2">
+            Delete
+          </button>
+        </form>
+      % }
+
+% }
+
+<hr>
+% if (session('user_id') && $post->{user_id} && session('user_id') == $post->{user_id}) {
+<form method="post" action="/post/<%= $post->{id} %>/comment">
+  <textarea name="content" class="form-control" required></textarea>
+  <button class="btn btn-primary mt-2">Add comment</button>
+</form>
+% }

@@ -26,25 +26,32 @@
             <%= $p->{title} %>
           </h5>
 
-          <p class="card-text text-muted">
-            <%= substr($p->{content}, 0, 200) %>
-            % if (length($p->{content}) > 200) {
-              ...
-            % }
-          </p>
+<p id="post-<%= $p->{id} %>">
+  <span class="short">
+    <%= substr($p->{content}, 0, 200) %>
+  </span>
 
-          <a href="/post/<%= $p->{id} %>" class="btn btn-outline-primary btn-sm">
-            Read more
+  <span class="full d-none">
+    <%= $p->{content} %>
+  </span>
+</p>
+
+<button id="btn-<%= $p->{id} %>" class="btn btn-outline-primary btn-sm" data-state="closed" onclick="toggle(<%= $p->{id} %>)">
+  Read more
+</button>
+
+          <a href="/post/<%= $p->{id} %>" class="btn btn-outline-secondary btn-sm ms-2">
+            Comment
           </a>
 
-        % if (int(session('user_id')) == int($p->{user_id})) {
-        <form method="post" action="/post/delete/<%= $p->{id} %>" style="display:inline; margin-left:5px;">
-          <button class="btn btn-outline-danger btn-sm">
+        % if (session('user_id') && $p->{user_id} && session('user_id') == $p->{user_id}) {
+        <form method="post" action="/post/delete/<%= $p->{id} %>" style="display:inline;">
+          <button class="btn btn-outline-danger btn-sm ms-2">
             Delete
           </button>
         </form>
         
-          <a href="/post/edit/<%= $p->{id} %>" class="btn btn-outline-success btn-sm">
+          <a href="/post/edit/<%= $p->{id} %>" class="btn btn-outline-success btn-sm ms-2">
             Edit
           </a>
         % }
@@ -134,3 +141,30 @@
   % }
 
 </div>
+
+<script>
+function toggle(id) {
+  const el = document.getElementById("post-" + id);
+
+  const shortText = el.querySelector(".short");
+  const fullText  = el.querySelector(".full");
+
+  const btn = document.getElementById("btn-" + id);
+
+  const state = btn.dataset.state;
+
+  if (state === "closed") {
+    shortText.classList.add("d-none");
+    fullText.classList.remove("d-none");
+
+    btn.dataset.state = "open";
+    btn.textContent = "Read less";
+  } else {
+    shortText.classList.remove("d-none");
+    fullText.classList.add("d-none");
+
+    btn.dataset.state = "closed";
+    btn.textContent = "Read more";
+  }
+}
+</script>
