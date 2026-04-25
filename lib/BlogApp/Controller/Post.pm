@@ -6,11 +6,19 @@ use warnings;
 sub list {
   my $c = shift;
 
-  my $posts = $c->pg->db->query(
-    'SELECT * FROM posts ORDER BY created_at DESC'
-  )->hashes;
+  my $page = $c->param('page') || 1;
+  $page = 1 if $page < 1;
+  my $per_page = 5;
+  my $offset = ($page - 1) * $per_page;
 
-  $c->stash(posts => $posts);
+  my $posts = $c->pg->db->query('SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?', $per_page, $offset)->hashes;
+
+  my $total = $c->pg->db->query('SELECT COUNT(*) FROM posts')->array->[0];
+
+  my $total_pages = int(($total + $per_page - 1) / $per_page);
+  $page = $total_pages if $page > $total_pages && $total_pages > 0;
+  $c->stash(posts => $posts, page => $page, total_pages => $total_pages);
+
   $c->render(template => 'post/list');
 }
 

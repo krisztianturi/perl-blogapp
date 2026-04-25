@@ -52,7 +52,78 @@
         </div>
       </div>
 
+
     % }
+
+    
+
+
+<nav class="mt-4">
+  <ul class="pagination justify-content-center">
+
+    % if ($page > 1) {
+      <li class="page-item">
+        <a class="page-link" href="/?page=<%= $page - 1 %>">Previous</a>
+      </li>
+    % } else {
+      <li class="page-item disabled">
+        <span class="page-link">Previous</span>
+      </li>
+    % }
+
+    % my $range = 5;
+    % my $start = $page - $range;
+    % my $end   = $page + $range;
+    % $start = 1 if $start < 1;
+    % $end = $total_pages if $end > $total_pages;
+
+    % if ($start > 1) {
+      <li class="page-item">
+        <a class="page-link" href="/?page=1">1</a>
+      </li>
+
+      % if ($start > 2) {
+        <li class="page-item disabled"><span class="page-link">...</span></li>
+      % }
+    % }
+
+    % for my $i ($start .. $end) {
+      % if ($i == $page) {
+        <li class="page-item active">
+          <span class="page-link"><%= $i %></span>
+        </li>
+      % } else {
+        <li class="page-item">
+          <a class="page-link" href="/?page=<%= $i %>"><%= $i %></a>
+        </li>
+      % }
+    % }
+
+    % if ($end < $total_pages) {
+
+      % if ($end < $total_pages - 1) {
+        <li class="page-item disabled"><span class="page-link">...</span></li>
+      % }
+
+      <li class="page-item">
+        <a class="page-link" href="/?page=<%= $total_pages %>">
+          <%= $total_pages %>
+        </a>
+      </li>
+    % }
+
+    % if ($page < $total_pages) {
+      <li class="page-item">
+        <a class="page-link" href="/?page=<%= $page + 1 %>">Next</a>
+      </li>
+    % } else {
+      <li class="page-item disabled">
+        <span class="page-link">Next</span>
+      </li>
+    % }
+
+  </ul>
+</nav>
 
   % } else {
 
