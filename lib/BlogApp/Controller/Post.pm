@@ -6,20 +6,35 @@ use warnings;
 sub list {
   my $c = shift;
 
+  my $search = $c->param('search') // '';
+  my $posts;
+  my $total;
+
+  if($search){
+    $total = $c->pg->db->query('SELECT COUNT(*) FROM posts
+                                        WHERE title ILIKE ? OR content ILIKE ?',"%$search%", "%$search%")->array->[0];
+  } else{
+    $total = $c->pg->db->query('SELECT COUNT(*) FROM posts')->array->[0];
+  }
+
   my $page = $c->param('page') || 1;
   $page = 1 if $page < 1;
   my $per_page = 5;
   my $offset = ($page - 1) * $per_page;
 
-  my $posts = $c->pg->db->query('SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?', $per_page, $offset)->hashes;
-
-  my $total = $c->pg->db->query('SELECT COUNT(*) FROM posts')->array->[0];
-
   my $total_pages = int(($total + $per_page - 1) / $per_page);
   $page = $total_pages if $page > $total_pages && $total_pages > 0;
+
+  if($search){
+        $posts =   $c->pg->db->query('SELECT * FROM posts  
+                                        WHERE title ILIKE ? OR content ILIKE ?  
+                                        ORDER BY created_at DESC LIMIT ? OFFSET ?',
+                                        "%$search%", "%$search%", $per_page, $offset)->hashes;                                         
+  }else{
+        $posts = $c->pg->db->query('SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?', $per_page, $offset)->hashes;         
+  }
   
   $c->stash(posts => $posts, page => $page, total_pages => $total_pages);
-
   $c->render(template => 'post/list');
 }
 
@@ -91,7 +106,6 @@ sub create {
     my $content = $c->param('content');
     my $user_id = $c->session('user_id');
 
-    #return if checking_errors($c,$title,$content,'/post/new');
     my @errors = checking_errors($title, $content);
 
     if (@errors) {
