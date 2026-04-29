@@ -37,17 +37,23 @@
             <%= $p->{title} %>
           </h5>
 
-<p id="post-<%= $p->{id} %>">
-  <span class="short">
-    <%= substr($p->{content}, 0, 200) %>
-  </span>
+<div id="post-<%= $p->{id} %>">
 
-  <span class="full d-none">
-    <%= $p->{content} %>
-  </span>
-</p>
+  <div class="short">
+    <%= substr($p->{content_raw} // '', 0, 200) %>
+  </div>
 
-<button id="btn-<%= $p->{id} %>" class="btn btn-outline-primary btn-sm" data-state="closed" onclick="toggle(<%= $p->{id} %>)">
+  <div class="full d-none">
+    <%== $p->{content_html} // '' %>
+  </div>
+
+</div>
+
+<button
+  id="btn-<%= $p->{id} %>"
+  class="btn btn-outline-primary btn-sm"
+  onclick="togglePost(<%= $p->{id} %>)"
+>
   Read more
 </button>
 
@@ -154,28 +160,23 @@
 </div>
 
 <script>
-function toggle(id) {
-  const el = document.getElementById("post-" + id);
+function togglePost(id) {
+  const post = document.getElementById(`post-${id}`);
+  const btn  = document.getElementById(`btn-${id}`);
 
-  const shortText = el.querySelector(".short");
-  const fullText  = el.querySelector(".full");
+  const shortEl = post.querySelector('.short');
+  const fullEl  = post.querySelector('.full');
 
-  const btn = document.getElementById("btn-" + id);
+  const isOpen = fullEl.classList.contains('d-none');
 
-  const state = btn.dataset.state;
-
-  if (state === "closed") {
-    shortText.classList.add("d-none");
-    fullText.classList.remove("d-none");
-
-    btn.dataset.state = "open";
-    btn.textContent = "Read less";
+  if (isOpen) {
+    fullEl.classList.remove('d-none');
+    shortEl.classList.add('d-none');
+    btn.innerText = 'Read less';
   } else {
-    shortText.classList.remove("d-none");
-    fullText.classList.add("d-none");
-
-    btn.dataset.state = "closed";
-    btn.textContent = "Read more";
+    fullEl.classList.add('d-none');
+    shortEl.classList.remove('d-none');
+    btn.innerText = 'Read more';
   }
 }
 </script>

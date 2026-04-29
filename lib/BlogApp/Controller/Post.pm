@@ -2,6 +2,8 @@ package BlogApp::Controller::Post;
 use Mojo::Base 'Mojolicious::Controller';
 use strict;
 use warnings;
+use BlogApp::SafeMarkdown qw(render_content);
+
 
 sub list {
   my $c = shift;
@@ -32,6 +34,10 @@ sub list {
                                         "%$search%", "%$search%", $per_page, $offset)->hashes;                                         
   }else{
         $posts = $c->pg->db->query('SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?', $per_page, $offset)->hashes;         
+  }
+
+  for my $p (@$posts){
+    render_content($p);
   }
   
   $c->stash(posts => $posts, page => $page, total_pages => $total_pages);
@@ -136,6 +142,12 @@ sub show {
    JOIN users u ON c.user_id = u.id
    WHERE c.post_id = ?
    ORDER BY c.created_at ASC', $id)->hashes;
+
+  render_content($post);
+
+  for my $c (@$comments){
+    render_content($c);
+  }
 
   $c->stash(post => $post, comments => $comments);
   $c->render(template => 'post/show');

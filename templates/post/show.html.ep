@@ -3,7 +3,7 @@
 
 <h2><%= $post->{title} %></h2>
 
-<p><%= $post->{content} %></p>
+<%== $post->{content_html} %>
 
 <hr>
 
@@ -30,7 +30,7 @@
     </small>
 
     <div>
-      <%= $c->{content} %>
+      <%== $c->{content_html} // '' %>
     </div>
 
   </div>
