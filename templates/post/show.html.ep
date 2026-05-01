@@ -5,6 +5,17 @@
 
 <%== $post->{content_html} %>
 
+
+% if ($post->{tags} && @{$post->{tags}}) {
+  <div class="mt-2">
+    % for my $t (@{$post->{tags}}) {
+      <span class="badge bg-secondary">
+        <%= $t->{name} %>
+      </span>
+    % }
+  </div>
+% }
+
 <hr>
 
 <h4>Comments</h4>

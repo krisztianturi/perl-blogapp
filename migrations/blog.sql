@@ -22,7 +22,24 @@ CREATE TABLE comments (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE tags (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE post_tags (
+  post_id INTEGER NOT NULL,
+  tag_id INTEGER NOT NULL,
+
+  PRIMARY KEY (post_id, tag_id),
+
+  FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+  FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE
+);
+
 -- 1 down
 DROP TABLE comments;
 DROP TABLE posts;
 DROP TABLE users;
+DROP TABLE post_tags;
+DROP TABLE tags;

@@ -28,10 +28,23 @@ sub list {
   $page = $total_pages if $page > $total_pages && $total_pages > 0;
 
   if($search){
-        $posts =   $c->pg->db->query('SELECT * FROM posts  
-                                        WHERE title ILIKE ? OR content ILIKE ?  
-                                        ORDER BY created_at DESC LIMIT ? OFFSET ?',
-                                        "%$search%", "%$search%", $per_page, $offset)->hashes;                                         
+    if ($search =~ /^#(.+)/) {
+      $search = $1;
+      $posts = $c->pg->db->query('SELECT DISTINCT posts.*
+                              FROM posts
+                              JOIN post_tags pt ON pt.post_id = posts.id
+                              JOIN tags t ON t.id = pt.tag_id
+                              WHERE t.name ILIKE ?
+                              ORDER BY posts.created_at DESC LIMIT ? OFFSET ?',"%$search%", $per_page, $offset)->hashes;
+    }
+    else{
+      $posts = $c->pg->db->query('SELECT * FROM posts                                          
+                                  WHERE title ILIKE ? OR content ILIKE ?  
+                                  ORDER BY created_at DESC LIMIT ? OFFSET ?',
+                                  "%$search%", "%$search%", $per_page, $offset)->hashes;   
+
+    }
+                                      
   }else{
         $posts = $c->pg->db->query('SELECT * FROM posts ORDER BY created_at DESC LIMIT ? OFFSET ?', $per_page, $offset)->hashes;         
   }
@@ -121,7 +134,48 @@ sub create {
 
     my $db = $c->pg->db;
 
-    $db->query('INSERT INTO posts (user_id, title, content) VALUES (?, ?, ?)', $user_id, $title, $content);
+    my $post = $c->pg->db->query(
+     'INSERT INTO posts (user_id, title, content)
+      VALUES (?, ?, ?)
+      RETURNING id',
+      $user_id, $title, $content)->hash;
+
+    my $post_id = $post->{id};
+
+    my $tags_raw = $c->param('tags') // '';
+    my @tags = split /,/, $tags_raw;
+
+    for my $t (@tags) {
+      $t =~ s/^\s+|\s+$//g;
+    }
+    @tags = grep { $_ ne '' } @tags;
+
+
+    $_ = lc $_ for @tags;
+    # for my $t (@tags) {
+    # $t = lc $t;
+    # }
+
+
+    for my $tag (@tags) {
+
+    my $tag_row = $c->pg->db->query(
+      'INSERT INTO tags (name)
+      VALUES (?)
+      ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+      RETURNING id',
+      $tag
+    )->hash;
+
+    my $tag_id = $tag_row->{id};
+
+    $c->pg->db->query(
+      'INSERT INTO post_tags (post_id, tag_id)
+      VALUES (?, ?)
+      ON CONFLICT DO NOTHING',
+      $post_id, $tag_id
+    );
+  }
 
 
   $c->redirect_to('/');
@@ -142,6 +196,13 @@ sub show {
    JOIN users u ON c.user_id = u.id
    WHERE c.post_id = ?
    ORDER BY c.created_at ASC', $id)->hashes;
+
+  my $tags = $c->pg->db->query('SELECT t.name
+    FROM tags t
+    JOIN post_tags pt ON pt.tag_id = t.id
+    WHERE pt.post_id = ?',$id)->hashes;
+
+  $post->{tags} = $tags;  
 
   render_content($post);
 
